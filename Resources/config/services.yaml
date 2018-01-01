@@ -1,0 +1,16 @@
+parameters:
+    file.filesystem: ''
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Mindy\Bundle\FileBundle\:
+        resource: '../../*'
+        exclude: '../../{Tests,vendor}'
+
+    Mindy\Bundle\FileBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']

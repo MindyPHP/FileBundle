@@ -1,10 +1,8 @@
-{% extends "admin/base.html" %}
+{% extends "file/base.html" %}
 
 {% block title %}{{ t('file.admin.title') }}{% endblock %}
 
 {% block content %}
-    <h1 class="b-heading">Файлы</h1>
-
     {% set path = request.query.get('path', '/') %}
 
     {% include "file/_upload.html" with ['input_name' => 'files', 'upload_url' => url('file_upload', ['path' => path])] %}
@@ -14,7 +12,7 @@
 
     <div class="b-space"></div>
 
-    <div class="b-filemanager__target">
+    <div class="b-filemanager__target" data-filemanager="true" data-wysiwyg="{{ wysiwyg }}">
         {% if objects|length %}
             <table class="b-table file-manager__table">
                 <thead class="b-table__thead">
@@ -49,7 +47,7 @@
                         </td>
                         <td class="b-table__td">
                             {% if entry.is_dir %}
-                                <a href="{{ url('file_list', ['path' => entry.path]) }}">{{ entry.name }}</a>
+                                <a href="{{ url('file_wysiwyg', request.query.all()|merge(['wysiwyg' => wysiwyg, 'path' => entry.path])) }}">{{ entry.name }}</a>
                             {% else %}
                                 <a href="{{ entry.url|asset('media') }}" target="_blank">{{ entry.name }}</a>
                             {% endif %}
@@ -60,6 +58,13 @@
                                    class="b-td__link b-filemanager__copy"
                                    data-text="{{ entry.url }}">
                                     <i class="b-icon">&#xE14D;</i>
+                                </a>
+                                <a href="#"
+                                   data-name="{{ entry.name }}"
+                                   data-url="{{ entry.url|asset('media') }}"
+                                   class="b-td__link b-filemanager__paste"
+                                   data-text="{{ entry.url }}">
+                                    <i class="b-icon">&#xE250;</i>
                                 </a>
                             {% endif %}
                             <a href="{{ url('file_delete', ['path' => entry.path]) }}"
@@ -73,7 +78,7 @@
                 </tbody>
             </table>
         {% else %}
-            <p>{{ t('file.empty') }}</p>
+            <div class="b-typeset">Файлы и директории отсутствуют</div>
         {% endif %}
     </div>
 {% endblock %}

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of Mindy Framework.
- * (c) 2017 Maxim Falaleev
+ * (c) 2018 Maxim Falaleev
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -20,87 +22,109 @@ class FileController extends Controller
 {
     const UPLOAD_NAME = 'files';
 
-    /**
-     * @return FilesystemInterface
-     */
-    protected function getFilesystem()
-    {
-        return $this->get($this->getParameter('file.filesystem'));
-    }
-
-    public function createDirectoryAction(Request $request)
+    public function createDirectory(Request $request, FilesystemInterface $fs)
     {
         $path = $request->query->get('path', '/');
-        $directoryName = $request->query->get('directory');
+        $directoryName = $request->request->get('directory');
 
         if (empty($directoryName)) {
             return $this->json([
                 'status' => false,
-                'message' => $this->get('translator')->trans('file.directory.missing_name_error'),
+                'message' => 'Не передано имя директории',
             ]);
         } elseif (strpos($directoryName, '/') !== false) {
             return $this->json([
                 'status' => false,
-                'message' => $this->get('translator')->trans('file.directory.incorrect_name_error'),
+                'message' => 'Не корректное имя директории',
             ]);
         }
-        $fs = $this->getFilesystem();
         $dirPath = implode('/', [$path, $directoryName]);
 
         if ($fs->has($dirPath)) {
             return $this->json([
                 'status' => false,
-                'message' => $this->get('translator')->trans('file.directory.exist_error'),
+                'message' => 'Директория с таким названием уже существует',
             ]);
         }
+
         if ($fs->createDir($dirPath)) {
             return $this->json([
                 'status' => true,
-                'message' => $this->get('translator')->trans('file.directory.create_success'),
+                'message' => 'Директория создана',
             ]);
         }
 
         return $this->json([
-            'status' => true,
-            'message' => $this->get('translator')->trans('file.directory.create_error'),
+            'status' => false,
+            'message' => 'Ошибка при создании директории',
         ]);
     }
 
-    public function listAction(Request $request)
+    public function wysiwyg(Request $request, string $wysiwyg, FilesystemInterface $fs)
     {
         $path = urldecode($request->query->get('path', '/'));
 
-        $directories = [];
-        $files = [];
-
-        foreach ($this->getFilesystem()->listContents($path) as $object) {
-            $isDir = $object['type'] === 'dir';
-            $params = [
+        $objects = [];
+        foreach ($fs->listContents($path) as $object) {
+            $objects[] = [
                 'path' => '/'.$object['path'],
                 'name' => basename($object['path']),
                 'date' => isset($object['timestamp']) ? date(DATE_W3C, $object['timestamp']) : null,
-                'is_dir' => $isDir,
+                'is_dir' => $object['type'] === 'dir',
                 'size' => isset($object['size']) ? $object['size'] : 0,
                 'url' => $object['path'],
             ];
-
-            if ($isDir) {
-                $directories[] = $params;
-            } else {
-                $files[] = $params;
-            }
         }
 
-        usort($directories, function ($a, $b) {
-            return strcmp($a["name"], $b["name"]);
-        });
-        usort($files, function ($a, $b) {
-            return strcmp($a["name"], $b["name"]);
-        });
+        $breadcrumbs = [
+            [
+                'url' => $this->generateUrl('file_wysiwyg', ['wysiwyg' => $wysiwyg]),
+                'name' => 'Файлы',
+            ],
+        ];
+        $prev = [];
+        foreach (array_filter(explode('/', $path)) as $part) {
+            $prev[] = $part;
 
-        $objects = array_merge($directories, $files);
+            $query = [
+                'wysiwyg' => $wysiwyg,
+                'path' => '/'.implode('/', $prev),
+            ];
+            $breadcrumbs[] = [
+                'url' => $this->generateUrl('file_wysiwyg', $query),
+                'name' => $part,
+            ];
+        }
 
-        $breadcrumbs = [];
+        return $this->render('file/wysiwyg.html', [
+            'breadcrumbs' => $breadcrumbs,
+            'objects' => $objects,
+            'wysiwyg' => $wysiwyg,
+        ]);
+    }
+
+    public function list(Request $request, FilesystemInterface $fs)
+    {
+        $path = urldecode($request->query->get('path', '/'));
+
+        $objects = [];
+        foreach ($fs->listContents($path) as $object) {
+            $objects[] = [
+                'path' => '/'.$object['path'],
+                'name' => basename($object['path']),
+                'date' => isset($object['timestamp']) ? date(DATE_W3C, $object['timestamp']) : null,
+                'is_dir' => $object['type'] === 'dir',
+                'size' => isset($object['size']) ? $object['size'] : 0,
+                'url' => $object['path'],
+            ];
+        }
+
+        $breadcrumbs = [
+            [
+                'url' => $this->generateUrl('file_list'),
+                'name' => 'Файлы',
+            ],
+        ];
         $prev = [];
         foreach (array_filter(explode('/', $path)) as $part) {
             $prev[] = $part;
@@ -110,24 +134,23 @@ class FileController extends Controller
             $breadcrumbs[] = ['url' => $url, 'name' => $part];
         }
 
-        $data = [
-            'fileBreadcrumbs' => $breadcrumbs,
+        return $this->render('file/list.html', [
+            'breadcrumbs' => $breadcrumbs,
             'objects' => $objects,
-        ];
-
-        return $request->isXmlHttpRequest() ? $this->render('file/_list.html', $data) : $this->render('file/list.html', $data);
+        ]);
     }
 
-    public function deleteAction(Request $request)
+    public function delete(Request $request, FilesystemInterface $fs)
     {
         $path = $request->query->get('path', '/');
-        $fs = $this->getFilesystem();
         if ($fs->has($path)) {
             $meta = $fs->getMetadata($path);
-            if ($meta['type'] === 'file') {
-                $fs->delete($path);
-            } else {
-                $fs->deleteDir($path);
+            $status = $meta['type'] === 'file' ? $fs->delete($path) : $fs->deleteDir($path);
+            if (false === $status) {
+                throw new \RuntimeException(sprintf(
+                    'Error while remove %s',
+                    $path
+                ));
             }
 
             return $this->json(['status' => true]);
@@ -136,21 +159,20 @@ class FileController extends Controller
         return $this->json(['status' => false, 'error' => 'Path not found']);
     }
 
-    public function uploadAction(Request $request)
+    public function upload(Request $request, FilesystemInterface $fs)
     {
         $path = $request->query->get('path', '/');
 
-        $filesystem = $this->getFilesystem();
         $files = $request->files->get(self::UPLOAD_NAME);
         foreach ($files as $file) {
             /** @var UploadedFile $file */
             if ($file->isValid()) {
                 $stream = fopen($file->getRealPath(), 'r+');
-                $filesystem->writeStream(sprintf('%s/%s', $path, $file->getClientOriginalName()), $stream);
+                $fs->writeStream(sprintf('%s/%s', $path, $file->getClientOriginalName()), $stream);
                 fclose($stream);
             }
         }
 
-        return new Response('');
+        return new Response('ok');
     }
 }

@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of Mindy Framework.
- * (c) 2017 Maxim Falaleev
+ * (c) 2018 Maxim Falaleev
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -43,6 +45,10 @@ class FileExtension extends AbstractTypeExtension
         return FileType::class;
     }
 
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array                $options
+     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addModelTransformer($this->fileDataTransformer);

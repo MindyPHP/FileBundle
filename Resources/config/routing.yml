@@ -1,15 +1,26 @@
 file_list:
     path: /list
-    defaults: { _controller: FileBundle:File:list }
+    defaults:
+        _controller: Mindy\Bundle\FileBundle\Controller\FileController::list
 
 file_upload:
     path: /upload
-    defaults: { _controller: FileBundle:File:upload }
+    defaults:
+        _controller: Mindy\Bundle\FileBundle\Controller\FileController::upload
+
+file_wysiwyg:
+    path: /wysiwyg/{wysiwyg}
+    defaults:
+        _controller: Mindy\Bundle\FileBundle\Controller\FileController::wysiwyg
+    requirements:
+        wysiwyg: 'ckeditor|tinymce'
 
 file_delete:
     path: /delete
-    defaults: { _controller: FileBundle:File:delete }
+    defaults:
+        _controller: Mindy\Bundle\FileBundle\Controller\FileController::delete
 
 file_create_directory:
     path: /create_directory
-    defaults: { _controller: FileBundle:File:createDirectory }
+    defaults:
+        _controller: Mindy\Bundle\FileBundle\Controller\FileController::createDirectory

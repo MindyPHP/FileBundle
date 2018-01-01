@@ -5,11 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="robots" content="noindex, nofollow"/>
     <title>{%- block title -%}{% endblock %} - {{ trans('admin.title') }} - {{ app.name }}</title>
-    <link rel="stylesheet" href="{{ asset('/bundles/admin/css/admin.bundle.css') }}"/>
-    <script type='text/javascript' src="{{ asset('/bundles/admin/js/admin.bundle.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('/bundles/admin/css/bundle.css') }}"/>
+    <script type='text/javascript' src="{{ asset('/bundles/admin/js/bundle.js') }}"></script>
     {% block css %}{% endblock %}
 </head>
 <body>
-{% block content %}
-{% endblock content %}
+<div class="b-breadcrumb">
+    <div class="b-breadcrumb__item">
+        <a class="b-breadcrumb__item b-breadcrumb__item_link"
+           href="{{ url('file_wysiwyg', ['wysiwyg' => wysiwyg]) }}">
+            <i class="b-icon">home</i>
+        </a>
+    </div>
+
+    <div class="b-breadcrumb__symbol"></div>
+
+    {% block breadcrumbs %}
+        {% if breadcrumbs %}
+            {% for bc in breadcrumbs %}
+                <div class="b-breadcrumb__item">
+                    {% if bc.url %}
+                        <a class="b-breadcrumb__item_link"
+                           href="{{ bc.url }}">{{ bc.name }}</a>
+                    {% else %}
+                        <span class="b-breadcrumb__item">{{ bc.name }}</span>
+                    {% endif %}
+                </div>
+                {% if not loop.last %}
+                    <div class="b-breadcrumb__symbol"></div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endblock %}
+</div>
+<div class="b-content">
+    {% block content %}
+    {% endblock content %}
+</div>
 </body>

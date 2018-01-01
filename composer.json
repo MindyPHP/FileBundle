@@ -15,13 +15,13 @@
         }
     },
     "require": {
-        "php": ">=5.5.9",
+        "php": ">=7.0",
         "league/flysystem-aws-s3-v3": "~1.0",
         "liip/imagine-bundle": "~1.0",
         "oneup/flysystem-bundle": "~1.0",
-        "symfony/expression-language": "~3.0",
-        "mindy/mindy-bundle": "~3.0",
-        "mindy/template-bundle": "~3.0"
+        "symfony/expression-language": "~3.0|~4.0",
+        "mindy/mindy-bundle": "~4.0",
+        "mindy/template-bundle": "~4.0"
     },
     "authors": [
         {
@@ -30,15 +30,8 @@
             "homepage": "http://studio107.ru"
         }
     ],
-    "minimum-stability": "dev",
-    "extra": {
-        "branch-alias": {
-            "dev-master": "3.6.8-dev"
-        }
-    },
     "require-dev": {
-        "symfony/dependency-injection": "~3.0",
-        "symfony/config": "~3.0",
-        "phpunit/phpunit": "~4.0"
+        "phpunit/phpunit": "^6.5",
+        "symfony/form": "^3.4"
     }
 }

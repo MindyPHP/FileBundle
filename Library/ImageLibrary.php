@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of Mindy Framework.
- * (c) 2017 Maxim Falaleev
+ * (c) 2018 Maxim Falaleev
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -12,12 +14,12 @@ namespace Mindy\Bundle\FileBundle\Library;
 
 use League\Flysystem\FilesystemInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
-use Mindy\Template\Library;
+use Mindy\Template\Library\AbstractLibrary;
 
 /**
  * Class ImageLibrary.
  */
-class ImageLibrary extends Library
+class ImageLibrary extends AbstractLibrary
 {
     /**
      * @var FilesystemInterface
@@ -46,21 +48,24 @@ class ImageLibrary extends Library
     public function getHelpers()
     {
         return [
-            'imagine_filter' => function ($path, $filter, array $runtimeConfig = [], $resolver = null) {
-                if (null === $this->cacheManager) {
-                    throw new \RuntimeException('Missing CacheManager');
-                }
-
-                return $this->cacheManager->getBrowserPath($path, $filter, $runtimeConfig, $resolver);
-            },
+            'imagine_filter' => [$this->cacheManager, 'getBrowserPath'],
         ];
     }
 
     /**
-     * @return array
+     * @param $path
+     * @param $filter
+     * @param array $runtimeConfig
+     * @param null  $resolver
+     *
+     * @return string
      */
-    public function getTags()
+    public function getBrowserPath($path, $filter, array $runtimeConfig = [], $resolver = null)
     {
-        return [];
+        if (null === $this->cacheManager) {
+            throw new \RuntimeException('Missing CacheManager');
+        }
+
+        return $this->cacheManager->getBrowserPath($path, $filter, $runtimeConfig, $resolver);
     }
 }
