@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Mindy\Bundle\FileBundle\Library;
 
-use League\Flysystem\FilesystemInterface;
 use Liip\ImagineBundle\Imagine\Cache\CacheManager;
 use Mindy\Template\Library\AbstractLibrary;
 
@@ -22,10 +21,6 @@ use Mindy\Template\Library\AbstractLibrary;
 class ImageLibrary extends AbstractLibrary
 {
     /**
-     * @var FilesystemInterface
-     */
-    protected $filesystem;
-    /**
      * @var CacheManager
      */
     protected $cacheManager;
@@ -33,12 +28,10 @@ class ImageLibrary extends AbstractLibrary
     /**
      * ImageLibrary constructor.
      *
-     * @param FilesystemInterface $filesystem
      * @param CacheManager        $cacheManager
      */
-    public function __construct(FilesystemInterface $filesystem, CacheManager $cacheManager = null)
+    public function __construct(CacheManager $cacheManager = null)
     {
-        $this->filesystem = $filesystem;
         $this->cacheManager = $cacheManager;
     }
 
@@ -50,22 +43,5 @@ class ImageLibrary extends AbstractLibrary
         return [
             'imagine_filter' => [$this->cacheManager, 'getBrowserPath'],
         ];
-    }
-
-    /**
-     * @param $path
-     * @param $filter
-     * @param array $runtimeConfig
-     * @param null  $resolver
-     *
-     * @return string
-     */
-    public function getBrowserPath($path, $filter, array $runtimeConfig = [], $resolver = null)
-    {
-        if (null === $this->cacheManager) {
-            throw new \RuntimeException('Missing CacheManager');
-        }
-
-        return $this->cacheManager->getBrowserPath($path, $filter, $runtimeConfig, $resolver);
     }
 }
