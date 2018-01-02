@@ -23,8 +23,4 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class FileBundle extends Bundle
 {
-    public function getParent()
-    {
-        return OneupFlysystemBundle::class;
-    }
 }
