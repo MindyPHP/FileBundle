@@ -27,7 +27,7 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->root('file');
         $rootNode
             ->children()
-            ->scalarNode('default_filesystem')->defaultNull()->end()
+            ->scalarNode('default_filesystem')->defaultValue('default')->end()
             ->end();
 
         return $treeBuilder;
