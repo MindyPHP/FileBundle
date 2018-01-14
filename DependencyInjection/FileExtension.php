@@ -39,9 +39,5 @@ class FileExtension extends Extension
         $container
             ->getDefinition(FileDataTransformer::class)
             ->setArguments([new Reference($fs)]);
-
-        $container
-            ->getDefinition(ImageLibrary::class)
-            ->setArguments([new Reference($fs)]);
     }
 }
