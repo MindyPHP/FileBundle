@@ -34,11 +34,6 @@ class ExtensionTest extends TestCase
 
         $this->assertSame($expected, $container->getParameter('file.filesystem'));
 
-        /** @var Reference $reference */
-        $definition = $container->getDefinition(ImageLibrary::class);
-        $reference = $definition->getArgument(0);
-        $this->assertSame($expected, (string) $reference);
-
         $definition = $container->getDefinition(FileDataTransformer::class);
         $reference = $definition->getArgument(0);
         $this->assertSame($expected, (string) $reference);
